@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause)
 OUTPUT := $(abspath .output)
-CLANG ?= clang
-LLVM_STRIP ?= llvm-strip
+CLANG ?= clang-14
+LLVM_STRIP ?= llvm-strip-14
 BPFTOOL_SRC := $(abspath ./bpftool/src)
 BPFTOOL_OUTPUT ?= $(abspath $(OUTPUT)/bpftool)
 BPFTOOL ?= $(BPFTOOL_OUTPUT)/bootstrap/bpftool
@@ -183,7 +183,7 @@ $(BPFTOOL): | $(BPFTOOL_OUTPUT)
 
 $(APPS): %: $(OUTPUT)/%.o $(COMMON_OBJ) $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
-	$(Q)$(CC) $(CFLAGS) $^ $(LDFLAGS) -lelf -lz -o $@
+	$(Q)$(CC) --static $(CFLAGS) $^ $(LDFLAGS) -lelf -lz -o $@
 
 ifeq ($(USE_BLAZESYM),1)
 $(patsubst %,$(OUTPUT)/%.o,$(BZ_APPS)): $(OUTPUT)/blazesym.h
