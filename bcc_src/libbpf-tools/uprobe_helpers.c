@@ -71,6 +71,11 @@ int get_pid_lib_path(pid_t pid, const char *lib, char *path, size_t path_sz)
 	while (fgets(line_buf, sizeof(line_buf), maps)) {
 		if (sscanf(line_buf, "%*x-%*x %*s %*x %*s %*u %s", path_buf) != 1)
 			continue;
+		// 先完全匹配
+		if (strncmp(path_buf, lib, strlen(path_buf)) == 0 ){
+			warn("find library %s,  lib: %s\n", path_buf, lib);
+			goto ret;
+		}
 		/* e.g. /usr/lib/x86_64-linux-gnu/libc-2.31.so */
 		p = strrchr(path_buf, '/');
 		if (!p)
@@ -88,14 +93,17 @@ int get_pid_lib_path(pid_t pid, const char *lib, char *path, size_t path_sz)
 			warn("path size too small\n");
 			return -1;
 		}
-		strcpy(path, path_buf);
-		fclose(maps);
-		return 0;
+		goto ret;
 	}
 
 	warn("Cannot find library %s\n", lib);
 	fclose(maps);
 	return -1;
+
+ret:
+	strcpy(path, path_buf);
+	fclose(maps);
+	return 0;
 }
 
 /*
