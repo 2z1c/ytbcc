@@ -40,7 +40,7 @@ static struct env {
 	int top_stacks;
 	size_t min_size;
 	size_t max_size;
-	char object[32];
+	char object[128];
 
 	bool wa_missing_free;
 	bool percpu;
