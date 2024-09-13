@@ -1,0 +1,52 @@
+#!/bin/bash
+TOPDIR=$(cd $(dirname $0)/..; pwd)
+OPTIONS="${1:-help}"
+
+set -e  
+
+DOCKER_IMAGE_NAME="bcc-builder-arm64-ubuntu2204"
+
+[ ! -d "$TOPDIR/.github" ] && echo -e "\033[31m 需要 在 根目录  \033[0m" && exit 1
+[ ! -d "$TOPDIR/bcc_src" ] && echo -e "\033[31m 需要 在 bcc_src 目录 \033[0m" && exit 1
+
+
+
+usage(){
+    echo -e "\033[01;31m 
+    usge:
+        `basename $0`   <subcmd>  
+
+    subcmd:
+        creat                           creat docker image
+        bash                            enter docker container
+        all                             enter docker container and build bcc
+        clean                           enter docker image and clean build files
+        help                            show  this message
+
+    \033[0m"
+}
+
+
+do_creat_image(){
+    echo -e "\033[01;32m creat docker image \033[0m"
+    docker buildx build -t $DOCKER_IMAGE_NAME -f $TOPDIR/.github/docker/Dockerfile.ubuntu2204  --load . 
+}
+
+do_entry_docker_build_env(){
+    docker run -it --rm -v $TOPDIR:$TOPDIR -w $TOPDIR $DOCKER_IMAGE_NAME /bin/bash
+}
+
+
+main(){
+    for option in ${OPTIONS}; do
+        case $option in
+            creat)          do_creat_image ;;
+            bash)           do_entry_docker_build_env ;;
+            clean)          do_entry_docker_clean_out ;;
+            *|help)         usage && exit 0 ;;
+        esac
+    done
+}
+
+
+main

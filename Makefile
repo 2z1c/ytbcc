@@ -10,7 +10,8 @@
 # LIBBPF_BPFTOOLS_TARGETS += cachestat
 # LIBBPF_BPFTOOLS_TARGETS += biotop
 # LIBBPF_BPFTOOLS_TARGETS += biopattern
-LIBBPF_BPFTOOLS_TARGETS += funclatency
+LIBBPF_BPFTOOLS_TARGETS += biosnoop
+# LIBBPF_BPFTOOLS_TARGETS += funclatency
 
 libbpftools.release:
 	mkdir -p ${CURDIR}/out

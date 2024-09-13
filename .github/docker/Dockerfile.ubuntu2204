@@ -1,0 +1,19 @@
+FROM hub.atomgit.com/arm64v8/ubuntu:22.04
+
+# RUN  sed -i s@/ports.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN sed -i "s@http://.*.ubuntu.com@http://mirrors.tuna.tsinghua.edu.cn@g" /etc/apt/sources.list
+
+RUN  apt-get update 
+RUN  apt-get install -y make pkg-config gcc libelf-dev libcap-dev libstdc++-11-dev zlib1g-dev
+RUN  mkdir -p /build /toolchain
+RUN  apt-get install -y libbpf-dev
+RUN  apt install -y clang
+RUN  apt install -y bison flex
+RUN  apt install -y libdw-dev libnuma-dev
+RUN  apt install -y zip bison build-essential cmake flex git libedit-dev \
+  libllvm14 llvm-14-dev libclang-14-dev python3 zlib1g-dev libelf-dev libfl-dev python3-setuptools \
+  liblzma-dev libdebuginfod-dev arping netperf iperf
+RUN  apt-get install -y file
+RUN  apt install -y lsb-release vim 
+
+RUN  apt-get install -y autoconf automake libtool

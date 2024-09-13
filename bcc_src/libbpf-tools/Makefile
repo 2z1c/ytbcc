@@ -96,6 +96,9 @@ APPS = \
 	$(BZ_APPS) \
 	#
 
+APPS += helloworld
+
+
 # export variables that are used in Makefile.btfgen as well.
 export OUTPUT BPFTOOL ARCH BTFHUB_ARCHIVE APPS
 
