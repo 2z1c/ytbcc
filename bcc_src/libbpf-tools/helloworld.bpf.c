@@ -7,11 +7,13 @@
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
-SEC("tracepoint/spi/spi_message_start")
-int spi_spi_message_start(struct trace_event_raw_sys_enter *ctx)
+const volatile int test_int = 99;
+
+// SEC("tracepoint/spi/spi_message_start")
+SEC("tracepoint/sched/sched_wakeup")
+int spi_spi_message_start(struct trace_event_raw_sys_enter  *ctx)
 {
 	int i = 0 ;
-	bpf_printk("helloworld %d\n", ++i);	
-	bpf_printk("helloworld %d\n", ++i);	
+	bpf_printk("helloworld test_int:%d\n", test_int);	
 	return 0;
 }

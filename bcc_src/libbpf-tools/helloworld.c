@@ -71,6 +71,8 @@ int main(int argc, char **argv)
 	}
 
 	bpf_program__set_autoload(obj->progs.spi_spi_message_start, true);
+
+	obj->rodata->test_int = 11;
 	err = helloworld_bpf__load(obj);
 	if (err) {
 		fprintf(stderr, "Failed to load BPF object: %d\n", err);
