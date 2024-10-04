@@ -4,7 +4,8 @@
 *.pyc
 .idea
 *~
-
+*.out
+.output/*
 # Build artifacts
 /build/
 cmake-build-debug
