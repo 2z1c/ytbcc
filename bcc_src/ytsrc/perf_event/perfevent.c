@@ -1,117 +1,103 @@
-/* SPDX-License-Identifier: (LGPL-2.1 OR BSD-2-Clause) */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/resource.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <signal.h>
 #include <bpf/libbpf.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
+#include <bpf/bpf.h>
 #include "perfevent.skel.h"
+#define PERF_BUFFER_PAGES (32)
+struct perf_bpf_common {
+    int pid;
+    int tid;
+    int count;
+    char comm[16];
+    int diff_ns;
+};
 
-
-int mysystem(const char * __command)
+static int exiting = 0;
+static void sig_handle_int(int signo)
 {
-        pid_t pid;
-        int retval=0;
-        if(NULL==__command){
-                return 1;
-        }
-        if((pid=fork())<0){//fork error
-                return -1;
-        }
-        else if(pid==0){
-                //use __command to replace current process
-                execl("/bin/sh", "sh", "-c", __command, (char *)0);
-                return 127;
-        }else{
-                while(waitpid(pid,&retval,0)<0){
-                        if(EINTR!=errno){
-                                retval = -1;
-                                break;
-                        }
-                }
-        }
-        return retval;
+	exiting = 1;
 }
-
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
+	if (level == LIBBPF_DEBUG)
+		return 0;
 	return vfprintf(stderr, format, args);
 }
 
-void read_trace_pipe(void)
-{
-	mysystem("echo 'trace:off' > /sys/kernel/debug/mtkfb");
-	mysystem("echo > /sys/kernel/tracing/set_event");
-    mysystem("echo 1 > /sys/kernel/tracing/tracing_on");
+static void perf_handle_event(void *ctx, int cpu, void *data, __u32 data_sz){
+    struct perf_bpf_common * bpf_data = (struct perf_bpf_common *)data;
+    printf("pid: %d, tid:%d, comm: %s\n", bpf_data->pid, bpf_data->tid, bpf_data->comm);
+    return;
 }
 
-
-int main(int argc, char **argv)
+static void perf_handle_lost_event(void *ctx, int cpu, __u64 lost_cnt)
 {
-	struct perfevent_bpf *obj;
-	int err;
-	pid_t pid;
+	printf("%s cpu: %d\n", __func__ , cpu);
+}
 
-	/* Set up libbpf errors and debug info callback */
-	libbpf_set_print(libbpf_print_fn);
+void enable_trace(void)
+{
+	(void)system("echo 'trace:off' > /sys/kernel/debug/mtkfb");
+	(void)system("echo > /sys/kernel/tracing/set_event");
+	(void)system("echo > /sys/kernel/tracing/trace");
+	(void)system("echo 1 > /sys/kernel/tracing/tracing_on");
+}
 
-	/* Load and verify BPF application */
+int main(int argc, char *argv[]){
 
-	obj = perfevent_bpf__open();
-	if (!obj) {
-		fprintf(stderr, "Failed to open BPF object\n");
+    struct perfevent_bpf *skel = NULL;
+    int err = 0, pid = 0;
+    unsigned int index = 0;
+    struct perf_buffer *pb = NULL;
+
+    libbpf_set_print(libbpf_print_fn);
+
+    skel = perfevent_bpf__open_and_load();
+    if(!skel){
+        fprintf(stderr, "Failed to open and load BPF skeleton\n");
 		return 1;
-	}
+    }
 
-	bpf_program__set_autoload(obj->progs.spi_spi_message_start, true);
-
-	obj->rodata->test_int = 11;
-	err = perfevent_bpf__load(obj);
-	if (err) {
-		fprintf(stderr, "Failed to load BPF object: %d\n", err);
-		goto cleanup;
-	}
-
-	// if (!obj->bss) {
-	// 	fprintf(stderr, "Memory-mapping BPF maps is supported starting from Linux 5.7, please upgrade.\n");
-	// 	goto cleanup;
-	// }
-
-	/* Attach tracepoint handler */
-	err = perfevent_bpf__attach(obj);
+    /* Attach tracepoint handler */
+	err = perfevent_bpf__attach(skel);
 	if (err) {
 		fprintf(stderr, "Failed to attach BPF skeleton\n");
 		goto cleanup;
 	}
 
-	printf("pid = %d\n", pid);
-	printf("Successfully started! Please run `sudo cat /sys/kernel/debug/tracing/trace_pipe` "
-	       "to see output of the BPF programs.\n");
+    pb = perf_buffer__new(bpf_map__fd(skel->maps.perf_map), PERF_BUFFER_PAGES, perf_handle_event, perf_handle_lost_event, NULL, NULL);
+    if(!pb){
+        err = -errno;
+        printf("failed to open perf buffer: %d\n", err);
+		goto cleanup;
+    }
 
+    if (signal(SIGINT, sig_handle_int) == SIG_ERR){
+        printf("can't set signal handler: %s\n", strerror(errno));
+		err = 1;
+		goto cleanup;
+    }
 
-
-	read_trace_pipe();
-
-	// for(;;){
-	// 	err = bpf_map__lookup_elem(skel->maps.my_data_map, &index, sizeof(index), &value, sizeof(value), NULL);
-	// 	if (err)
-	// 	{
-	// 		sleep(1);
-	// 		continue;
-	// 	}
-	// 	printf("pid = %d, count = %d\n",value.pid, value.count);
-	// }
-
-	while(1){
-		sleep(1);
-	}
+    enable_trace();
+    while(!exiting){
+        err = perf_buffer__poll(pb, 100);
+        if(err < 0 && err != -EINTR){
+            printf("error polling perf buffer: %s\n", strerror(-err));
+			goto cleanup;
+        }
+        err = 0;
+    }
 
 cleanup:
-	perfevent_bpf__destroy(obj);
-	return -err;
+    perf_buffer__free(pb);
+    perfevent_bpf__destroy(skel);
+    return 0;
 }

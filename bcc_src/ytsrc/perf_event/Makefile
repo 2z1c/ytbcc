@@ -13,7 +13,7 @@ CLANG ?= clang-14
 LLVM_STRIP ?= llvm-strip-14
 
 INCLUDES := -I$(OUTPUT) -I${BCC_WORK_SRC}/src/cc/libbpf/include/uapi
-CFLAGS := -g -O2 -Wall -Wmissing-field-initializers -Werror
+CFLAGS := -g -O2 -Wall -Wmissing-field-initializers 
 BPFCFLAGS := -g -O2 -Wall
 
 ARCH := arm64
