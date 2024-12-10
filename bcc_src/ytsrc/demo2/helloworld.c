@@ -45,11 +45,9 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 
 void read_trace_pipe(void)
 {
-	
-	// mysystem("echo 'trace:off' > /sys/kernel/debug/mtkfb");
+	mysystem("echo 'trace:off' > /sys/kernel/debug/mtkfb");
 	mysystem("echo > /sys/kernel/tracing/set_event");
     mysystem("echo 1 > /sys/kernel/tracing/tracing_on");
-	mysystem("cat /sys/kernel/debug/tracing/trace_pipe");
 }
 
 
@@ -108,6 +106,10 @@ int main(int argc, char **argv)
 	// 	}
 	// 	printf("pid = %d, count = %d\n",value.pid, value.count);
 	// }
+
+	while(1){
+		sleep(1);
+	}
 
 cleanup:
 	helloworld_bpf__destroy(obj);

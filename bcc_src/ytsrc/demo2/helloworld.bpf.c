@@ -10,7 +10,8 @@ char LICENSE[] SEC("license") = "Dual BSD/GPL";
 const volatile int test_int = 99;
 
 // SEC("tracepoint/spi/spi_message_start")
-SEC("tracepoint/sched/sched_wakeup")
+// SEC("tracepoint/sched/sched_wakeup")
+SEC("kprobe/do_sys_openat2")
 int spi_spi_message_start(struct trace_event_raw_sys_enter  *ctx)
 {
 	int i = 0 ;

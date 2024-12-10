@@ -17,7 +17,7 @@ CFLAGS := -g -O2 -Wall -Wmissing-field-initializers -Werror
 BPFCFLAGS := -g -O2 -Wall
 
 ARCH := arm64
-BPFTOOL_SRC := $(abspath ./bpftool/src)
+BPFTOOL_SRC := ${BCC_WORK_SRC}/libbpf-tools/bpftool/src
 BPFTOOL_OUTPUT ?= $(abspath $(OUTPUT)/bpftool)
 BPFTOOL ?= $(BPFTOOL_OUTPUT)/bootstrap/bpftool
 
@@ -72,3 +72,8 @@ $(shell mkdir -p $(OUTPUT)/libbpf ${BPFTOOL_OUTPUT})
 
 .DEFAULT_GOAL := helloworld
 all: helloworld hello
+
+.PHONY: clean
+clean:
+	$(call msg,CLEAN)
+	$(Q)rm -rf *.out
