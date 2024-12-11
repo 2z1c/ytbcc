@@ -13,6 +13,7 @@ struct perf_bpf_common {
     int diff_ns;
 };
 
+const volatile int filter_pid = 0;
 #define DEFINITION_STRUCT_PERF_BPF_COMMON(name) {.pid = 0, .tid=0, .count=0, .diff_ns=0}
 
 struct {
@@ -30,11 +31,7 @@ struct {
     __type(value, u32);
 } count_map SEC(".maps");
 
-
-// SEC("kprobe/spidev_ioctl")
-// SEC("tracepoint/block/block_rq_issue")
-SEC("kprobe/do_sys_openat2")
-int bpf_spidev_ioctl(void *ctx){
+static int fecth_add_count_and_perf(void *ctx){
      struct perf_bpf_common data = DEFINITION_STRUCT_PERF_BPF_COMMON();
      long id = bpf_get_current_pid_tgid();
 	 u32 index = 0;
@@ -54,8 +51,22 @@ int bpf_spidev_ioctl(void *ctx){
     }
 
      
-     bpf_perf_event_output(ctx, &perf_map, BPF_F_CURRENT_CPU, &data, sizeof(data));
-     return 0;
+    bpf_perf_event_output(ctx, &perf_map, BPF_F_CURRENT_CPU, &data, sizeof(data));
+    return 0;
+}
+
+// SEC("kprobe/spidev_ioctl")
+// SEC("tracepoint/block/block_rq_issue")
+SEC("kprobe/do_sys_openat2")
+int bpf_spidev_ioctl(void *ctx) {
+    long id = bpf_get_current_pid_tgid();
+    int pid = id >> 32;
+    int tid = (int) id;
+
+    if (filter_pid == 0 || filter_pid == pid) {
+        return fecth_add_count_and_perf(ctx);
+    }
+    return 0;
 }
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
