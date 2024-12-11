@@ -96,7 +96,7 @@ endif()
 #  $ cmake -DKERNEL_INCLUDE_DIRS=/tmp/headers/include/ ...
 include_directories(${KERNEL_INCLUDE_DIRS})
 
-option(ENABLE_NO_PIE "Build bcc-lua without PIE" ON)
+option(ENABLE_NO_PIE "Build bcc-lua without PIE" OFF)
 
 include(cmake/GetGitRevisionDescription.cmake)
 include(cmake/version.cmake)
@@ -111,13 +111,14 @@ option(ENABLE_LLVM_SHARED "Enable linking LLVM as a shared library" OFF)
 option(ENABLE_CLANG_JIT "Enable Loading BPF through Clang Frontend" ON)
 option(ENABLE_USDT "Enable User-level Statically Defined Tracing" ON)
 option(ENABLE_EXAMPLES "Build examples" ON)
-option(ENABLE_MAN "Build man pages" ON)
-option(ENABLE_TESTS "Build tests" ON)
-option(RUN_LUA_TESTS "Run lua tests" ON)
-option(ENABLE_LIBDEBUGINFOD "Use libdebuginfod as a source of debug symbols" ON)
+option(ENABLE_MAN "Build man pages" OFF)
+option(ENABLE_TESTS "Build tests" OFF)
+option(RUN_LUA_TESTS "Run lua tests" OFF)
+option(ENABLE_LIBDEBUGINFOD "Use libdebuginfod as a source of debug symbols" OFF)
 CMAKE_DEPENDENT_OPTION(ENABLE_CPP_API "Enable C++ API" ON "ENABLE_USDT" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 if(ENABLE_TESTS)
   find_package(KernelHeaders)

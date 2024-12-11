@@ -34,3 +34,9 @@ foreach(EXAMPLE ${EXAMPLES})
 endforeach()
 
 add_subdirectory(pyperf)
+
+add_executable(HelloworldStatic HelloWorld.cc)
+target_link_libraries(HelloworldStatic bcc-static)
+install (TARGETS HelloworldStatic DESTINATION share/bcc/examples/cpp)
+
+ 
