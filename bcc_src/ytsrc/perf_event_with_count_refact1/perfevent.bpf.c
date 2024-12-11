@@ -14,6 +14,7 @@ struct perf_bpf_common {
 };
 
 const volatile int filter_pid = 0;
+const volatile int filter_tid = 0;
 #define DEFINITION_STRUCT_PERF_BPF_COMMON(name) {.pid = 0, .tid=0, .count=0, .diff_ns=0}
 
 struct {
@@ -63,9 +64,16 @@ int bpf_spidev_ioctl(void *ctx) {
     int pid = id >> 32;
     int tid = (int) id;
 
-    if (filter_pid == 0 || filter_pid == pid) {
+    bpf_printk("filter pid:%d   filter tid: %d", filter_pid, filter_tid);
+    if (filter_tid == tid)
         return fecth_add_count_and_perf(ctx);
-    }
+
+    if (filter_pid == pid && filter_tid == 0)
+        return fecth_add_count_and_perf(ctx);
+
+    if (filter_pid == 0 && filter_tid == 0)
+        return fecth_add_count_and_perf(ctx);
+
     return 0;
 }
 

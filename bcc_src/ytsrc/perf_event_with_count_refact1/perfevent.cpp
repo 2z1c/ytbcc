@@ -95,6 +95,7 @@ int main(int argc, char *argv[]){
     printf("filter pid: %ld, filter tid: %ld\n", filter_pid, filter_tid);
     /* Set PID to trace */
     skel->rodata->filter_pid = filter_pid;
+    skel->rodata->filter_tid = filter_tid;
 
     err = perfevent_bpf__load(skel);
     if (err) {
