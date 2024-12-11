@@ -10,6 +10,7 @@
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
 #include <iostream>
+#include <cassert>
 #include "perfevent.skel.h"
 // #include "cxxopts.hpp"
 #include "argparse.hpp"
@@ -49,10 +50,10 @@ static void perf_handle_lost_event(void *ctx, int cpu, __u64 lost_cnt)
 
 void enable_trace(void)
 {
-	(void)system("echo 'trace:off' > /sys/kernel/debug/mtkfb");
-	(void)system("echo > /sys/kernel/tracing/set_event");
-	(void)system("echo > /sys/kernel/tracing/trace");
-	(void)system("echo 1 > /sys/kernel/tracing/tracing_on");
+	assert(!system("echo 'trace:off' > /sys/kernel/debug/mtkfb"));
+	assert(!system("echo > /sys/kernel/tracing/set_event"));
+	assert(!system("echo > /sys/kernel/tracing/trace"));
+	assert(!system("echo 1 > /sys/kernel/tracing/tracing_on"));
 }
 
 int main(int argc, char *argv[]){
