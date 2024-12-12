@@ -32,7 +32,7 @@ struct {
     __type(value, u32);
 } count_map SEC(".maps");
 
-static int fecth_add_count_and_perf(void *ctx){
+static int fecth_add_count_and_perf(struct pt_regs *ctx){
      struct perf_bpf_common data = DEFINITION_STRUCT_PERF_BPF_COMMON();
      long id = bpf_get_current_pid_tgid();
 	 u32 index = 0;
@@ -50,20 +50,21 @@ static int fecth_add_count_and_perf(void *ctx){
         data.count = init_val;
         bpf_map_update_elem(&count_map, &index, &init_val, BPF_ANY);
     }
-
      
     bpf_perf_event_output(ctx, &perf_map, BPF_F_CURRENT_CPU, &data, sizeof(data));
     return 0;
 }
 
+// static long do_sys_openat2(int dfd, const char __user *filename, struct open_how *how)
+// SEC("kprobe/do_sys_openat2")
+// int bpf_spidev_ioctl(void *ctx) {
 
-SEC("kprobe/do_sys_openat2")
-int bpf_spidev_ioctl(void *ctx) {
+SEC("kretprobe/do_sys_openat2")
+int BPF_KRETPROBE(do_sys_openat2) {
     long id = bpf_get_current_pid_tgid();
     int pid = id >> 32;
     int tid = (int) id;
 
-    bpf_printk("filter pid:%d   filter tid: %d", filter_pid, filter_tid);
     if (filter_tid == tid)
         return fecth_add_count_and_perf(ctx);
 
