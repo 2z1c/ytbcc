@@ -10,6 +10,7 @@ struct state_change {
     pid_t prev_pid;
     pid_t next_pid;
     pid_t filter_pid;
+    long int prev_state;
     u64 timestamp;
     u64 count;
 };
@@ -76,6 +77,7 @@ int trace_sched_switch(struct trace_event_raw_sched_switch *ctx) {
         // bpf_printk("prev_pid:%d,  next_pid:%d\n", sc.prev_pid, sc.next_pid);
         sc.filter_pid = filter_pid;
         sc.count = fetch_count;
+        sc.prev_state = ctx->prev_state;
         bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &sc, sizeof(sc));
     }
     return 0;

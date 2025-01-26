@@ -29,7 +29,7 @@ usage(){
 
 do_creat_image(){
     echo -e "\033[01;32m creat docker image \033[0m"
-    docker buildx build -t $DOCKER_IMAGE_NAME -f $TOPDIR/.github/docker/Dockerfile.ubuntu2204  --load . 
+    docker buildx build --platform=linux/arm64 -t $DOCKER_IMAGE_NAME -f $TOPDIR/.github/docker/Dockerfile.ubuntu2204  --load . 
 }
 
 do_entry_docker_build_env(){

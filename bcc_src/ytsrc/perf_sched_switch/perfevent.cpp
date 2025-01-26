@@ -44,6 +44,7 @@ struct state_change {
     pid_t prev_pid;
     pid_t next_pid;
     pid_t filter_pid;
+    long int prev_state;
     u64 timestamp;
     u64 count;
 };
@@ -61,7 +62,8 @@ static std::unordered_map<uint32_t, state_time> process_state_time;
 // void *ctx, int cpu, void *data, __u32 data_sz
 void process_event(void *ctx, int cpu, void *data, __u32 len) {
     struct state_change *event = (struct state_change*)data;
-    printf("prev_pid -> %d, next_pid-> %d, filter_pid-> %d, count: %lu\n", event->prev_pid, event->next_pid, event->filter_pid, event->count);
+    printf("prev_pid:%d, next_pid:%d filter_pid:%d prev_state:%lu count:%lu\n", 
+            event->prev_pid, event->next_pid, event->filter_pid, event->prev_state ,event->count);
     // uint32_t pid = event->pid;
     // char prev_state = event->prev_state;
     // char next_state = event->next_state;

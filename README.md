@@ -8,4 +8,5 @@ hack/build-helper help
 hack/build-helper bash
 ```
 
-# 
+# go
+go mod init ytbcc
