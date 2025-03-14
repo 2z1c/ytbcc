@@ -35,6 +35,7 @@ endif
 BZ_APPS = \
 	futexctn \
 	memleak \
+	kmemleak \
 	opensnoop \
 	#
 
