@@ -17,6 +17,13 @@ struct data_t {
     char comm[16];
 };
 
+struct perf_bpf_common {
+    int pid;
+    int tid;
+    char comm[16];
+};
+
+
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
 	// if (level == LIBBPF_DEBUG && !env.verbose)
@@ -25,8 +32,8 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 }
 
 static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz){
-    struct data_t *e = data;
-    printf("PID: %d (%s), Count: %llu\n", e->pid, e->comm, e->count);
+    struct perf_bpf_common *e = data;
+    printf("PID: %d (%d), Comm: %s\n", e->pid, e->tid, e->comm);
 }
 
 void sig_handler(int signo)
