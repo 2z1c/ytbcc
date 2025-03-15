@@ -13,27 +13,20 @@ typedef unsigned int  __u32;
 static volatile bool exiting = false;
 struct data_t {
     u32 pid;
-    u64 count;
-    char comm[16];
-};
-
-struct perf_bpf_common {
-    int pid;
-    int tid;
+    u32 count;
+    size_t bytes;
     char comm[16];
 };
 
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
 {
-	// if (level == LIBBPF_DEBUG && !env.verbose)
-	// 	return 0;
 	return vfprintf(stderr, format, args);
 }
 
 static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz){
-    struct perf_bpf_common *e = data;
-    printf("PID: %d (%d), Comm: %s\n", e->pid, e->tid, e->comm);
+    struct data_t *e = data;
+    printf("PID: %d (%d), bytes: %ld\n", e->pid, e->count, e->bytes);
 }
 
 void sig_handler(int signo)
