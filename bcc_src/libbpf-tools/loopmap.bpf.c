@@ -12,8 +12,9 @@ typedef unsigned int u32;
 struct alloc_info {
     u64 size;
     u64 timestamp_ns;
-    // u32 pid;
-    // u32 __reserved[3];
+    u32 pid;
+    u32 tid;
+
 };
 
 
@@ -63,9 +64,12 @@ int trace_kmalloc(struct trace_event_raw_kmalloc *ctx)
     u64 id = bpf_get_current_pid_tgid();
     int stack_id = 0;
     u32 pid = id >> 32;
+    u32 tid = (u32)id;
     struct alloc_info info = {
         .size = ctx->bytes_alloc,
         .timestamp_ns = bpf_ktime_get_ns(),
+        .pid = pid,
+        .tid = tid,
     };
     // stack_id = bpf_get_stackid(ctx, &stackmap, BPF_F_USER_STACK);
     // if (stack_id >= 0) {

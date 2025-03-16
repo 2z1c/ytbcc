@@ -12,8 +12,9 @@ typedef unsigned int u32;
 struct alloc_info {
     u64 size;
     u64 timestamp_ns;
+    u32 pid;
+    u32 tid;
 };
-
 static void handle_signal(int sig)
 {
     exiting = true;
@@ -67,8 +68,10 @@ int main(int argc, char **argv)
         while (bpf_map_get_next_key(bpf_map__fd(skel->maps.allocs), &key, &next_key) == 0) {
             if (bpf_map_lookup_elem(bpf_map__fd(skel->maps.allocs), &next_key, &info) == 0) {
                 // if (info.pid == 14606){
-                    printf("PID: %llu, Alloc Size: %llu bytes, Timestamp: %llu ns\n", next_key, info.size, info.timestamp_ns);
+                    // printf("PID: %llu, Alloc Size: %llu bytes, Timestamp: %llu ns\n", next_key, info.size, info.timestamp_ns);
                 // }
+
+                printf("PID: %u, TID: %u, Alloc Size: %llu bytes, Timestamp: %llu ns\n", info.pid, info.tid, info.size, info.timestamp_ns);
             }
             key = next_key; 
         }

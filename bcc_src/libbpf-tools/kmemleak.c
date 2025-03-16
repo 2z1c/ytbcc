@@ -26,7 +26,12 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 
 static void handle_event(void *ctx, int cpu, void *data, __u32 data_sz){
     struct data_t *e = data;
-    printf("PID: %d (%d), bytes: %ld\n", e->pid, e->count, e->bytes);
+    static u32 count = 0;
+    count ++;
+    if (count != e->count){
+        printf("PID: %d , bytes: %ld, ex:%u real:%u\n", e->pid, e->bytes, count, e->count);
+        count = e->count;
+    }
 }
 
 void sig_handler(int signo)
