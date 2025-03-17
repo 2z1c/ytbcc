@@ -14,7 +14,10 @@ struct alloc_info {
     u64 timestamp_ns;
     u32 pid;
     u32 tid;
+    u64 count;
 };
+
+
 static void handle_signal(int sig)
 {
     exiting = true;
@@ -71,7 +74,7 @@ int main(int argc, char **argv)
                     // printf("PID: %llu, Alloc Size: %llu bytes, Timestamp: %llu ns\n", next_key, info.size, info.timestamp_ns);
                 // }
 
-                printf("PID: %u, TID: %u, Alloc Size: %llu bytes, Timestamp: %llu ns\n", info.pid, info.tid, info.size, info.timestamp_ns);
+                printf("PID: %u, TID: %u, Alloc Size: %llu bytes, count: %llu\n", info.pid, info.tid, info.size, info.count);
             }
             key = next_key; 
         }
