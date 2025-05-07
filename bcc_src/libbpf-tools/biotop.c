@@ -393,10 +393,12 @@ static void blk_account_io_set_autoload(struct biotop_bpf *obj,
 	if (!ksyms__get_symbol(ksyms, "__blk_account_io_start")) {
 		bpf_program__set_autoload(obj->progs.__blk_account_io_start, false);
 		bpf_program__set_autoload(obj->progs.__blk_account_io_done, false);
-	} else {
-		bpf_program__set_autoload(obj->progs.blk_account_io_start, false);
+	} 
+    
+    if (!ksyms__get_symbol(ksyms, "blk_account_io_start" )) {
+        bpf_program__set_autoload(obj->progs.blk_account_io_start, false);
 		bpf_program__set_autoload(obj->progs.blk_account_io_done, false);
-	}
+    }
 }
 
 int main(int argc, char **argv)

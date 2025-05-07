@@ -219,7 +219,7 @@ void handle_lost_events(void *ctx, int cpu, __u64 lost_cnt)
 	fprintf(stderr, "lost %llu events on CPU #%d\n", lost_cnt, cpu);
 }
 
-static void blk_account_io_set_attach_target(struct biosnoop_bpf *obj)
+__attribute__((__unused__)) static void blk_account_io_set_attach_target(struct biosnoop_bpf *obj)
 {
 	if (fentry_can_attach("blk_account_io_start", NULL))
 		bpf_program__set_attach_target(obj->progs.blk_account_io_start,
@@ -281,8 +281,13 @@ int main(int argc, char **argv)
 		bpf_program__set_autoload(obj->progs.blk_account_io_start, false);
 	else {
 		bpf_program__set_autoload(obj->progs.block_io_start, false);
-		blk_account_io_set_attach_target(obj);
+
+		// blk_account_io_set_attach_target(obj);
 	}
+
+    if (!tracepoint_exists("block", "blk_account_io_start")){
+        bpf_program__set_autoload(obj->progs.blk_account_io_start, false);
+    }
 
 	ksyms = ksyms__load();
 	if (!ksyms) {
