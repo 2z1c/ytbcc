@@ -113,16 +113,16 @@ int trace_kmalloc(struct trace_event_raw_kmalloc *ctx)
     // if (stack_id >= 0) {
         // bpf_map_update_elem(&allocs, &id, &info, BPF_ANY);
     // }
-    if (tid == 17400){
-        bpf_printk("has call\n");
-    }
+
     info = bpf_map_lookup_or_try_init(&allocs, &id, &init_info);
     
     // update
     if (info) {
-        // info 
-        __sync_fetch_and_add(&info->size, ctx->bytes_alloc);
+        // info
+        info->size = ctx->bytes_alloc;
+        // __sync_fetch_and_add(&info->size, ctx->bytes_alloc);
         __sync_fetch_and_add(&info->count, 1);
+        // bpf_map_update_elem(&allocs, &id, &info, BPF_ANY);
         // __sync_fetch_and_add(&info->timestamp_ns, info->timestamp_ns);
     }
 
